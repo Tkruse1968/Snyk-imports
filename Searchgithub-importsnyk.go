@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/time/rate"
+	"golang.org/x/time/rate" // Add this line
 )
 
 // Database configuration
@@ -83,6 +83,7 @@ func initDB() (*sql.DB, error) {
             repo_name VARCHAR(255) NOT NULL,
             file_path TEXT NOT NULL,
             success BOOLEAN NOT NULL,
+			job_id VARCHAR(255) NOT NULL,
             error_message TEXT,
             imported_at TIMESTAMP NOT NULL,
             UNIQUE(repo_owner, repo_name, file_path)
@@ -153,8 +154,8 @@ func importToSnyk(repo Repository, filePath string, snykToken string) error {
 func writeImportResult(db *sql.DB, result ImportResult) error {
 	_, err := db.Exec(`
         INSERT INTO snyk_imports 
-        (repo_id, repo_owner, repo_name, file_path, success, error_message, imported_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        (repo_id, repo_owner, repo_name, file_path, success, job_id, error_message, imported_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8 )
         ON CONFLICT (repo_owner, repo_name, file_path) 
         DO UPDATE SET 
             success = EXCLUDED.success,
